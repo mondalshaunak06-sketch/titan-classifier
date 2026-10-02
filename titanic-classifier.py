@@ -26,3 +26,29 @@ model = LogisticRegression(max_iter=1000)
 model.fit(train_df[basic_features], y_train)
 preds = model.predict(test_df[basic_features])
 print("Baseline accuracy:", round(accuracy_score(y_test, preds), 3))
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix
+
+extended_features = ["pclass", "sex", "age", "fare", "family_size"] + [
+    c for c in df.columns if c.startswith("embarked_")
+]
+
+feature_sets = {"basic": basic_features, "extended": extended_features}
+models = {
+    "LogisticRegression": LogisticRegression(max_iter=1000),
+    "RandomForest": RandomForestClassifier(n_estimators=200, random_state=42),
+}
+
+results = []
+for fs_name, cols in feature_sets.items():
+    for model_name, m in models.items():
+        m.fit(train_df[cols], y_train)
+        p = m.predict(test_df[cols])
+        acc = accuracy_score(y_test, p)
+        results.append((fs_name, model_name, round(acc, 3)))
+        print(f"\n{model_name} | {fs_name} features")
+        print("Accuracy:", round(acc, 3))
+        print("Confusion matrix:\n", confusion_matrix(y_test, p))
+
+print("\nSummary")
+print(pd.DataFrame(results, columns=["features", "model", "accuracy"]))
