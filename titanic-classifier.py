@@ -11,3 +11,18 @@ df["embarked"] = df["embarked"].fillna(df["embarked"].mode()[0])
 df["sex"] = df["sex"].map({"male": 0, "female": 1})
 df = pd.get_dummies(df, columns=["embarked"], drop_first=True)
 df["family_size"] = df["sibsp"] + df["parch"] + 1
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+
+y = df["survived"]
+basic_features = ["pclass", "sex", "age", "fare"]
+
+train_df, test_df, y_train, y_test = train_test_split(
+    df, y, test_size=0.2, random_state=42, stratify=y
+)
+
+model = LogisticRegression(max_iter=1000)
+model.fit(train_df[basic_features], y_train)
+preds = model.predict(test_df[basic_features])
+print("Baseline accuracy:", round(accuracy_score(y_test, preds), 3))
